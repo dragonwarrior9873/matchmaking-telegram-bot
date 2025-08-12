@@ -27,6 +27,57 @@ const ProjectSchema = new Schema<Project & Document>({
     type: String,
     required: true
   },
+  
+  // Token info from APIs
+  token_symbol: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  token_price: {
+    type: Number,
+    required: false
+  },
+  token_price_change_24h: {
+    type: Number,
+    required: false
+  },
+  token_volume_24h: {
+    type: Number,
+    required: false
+  },
+  token_market_cap_api: {
+    type: Number,
+    required: false
+  },
+  token_telegram_group_api: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  token_twitter_handle: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  token_website: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  token_description: {
+    type: String,
+    required: false
+  },
+  token_logo_url: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  token_info_last_updated: {
+    type: Date,
+    required: false
+  },
 
   telegram_group: { 
     type: String, 

@@ -2,6 +2,7 @@ import { MyContext, sendTyping, sendWithIcon, sendIcon, sendSimpleMessage, mainM
 import { Conversation } from '@grammyjs/conversations';
 import { InlineKeyboard, InputFile } from 'grammy';
 import { dbService } from '../../services/database';
+import { tokenInfoService } from '../../services/tokenInfo';
 import { Chain, MarketCap, Project } from '../../types';
 import path from 'path';
 
@@ -254,7 +255,30 @@ export async function onboardingConversation(conversation: Conversation<MyContex
   }
 
   await sendTyping(ctx);
-  await ctx.reply(`✅ Selected chains: ${selectedChains.join(', ')}\n\n**Step 5/7:** What's your token's market cap range?\n\nThis helps with better matching:`, {
+  await ctx.reply(`✅ Selected chains: ${selectedChains.join(', ')}\n\n🔍 **Fetching token information...**\n\nI'm getting the latest market data for your token from CoinGecko and DexScreener. This will help others see real-time information when browsing your token.`);
+
+  // Fetch token information from APIs
+  let tokenInfo = null;
+  try {
+    // Try to fetch from the first selected chain
+    const primaryChain = selectedChains[0];
+    tokenInfo = await tokenInfoService.fetchTokenInfo(contractAddress.trim(), primaryChain);
+    
+    if (tokenInfo) {
+      await sendTyping(ctx);
+      await ctx.reply(`✅ **Token information fetched successfully!**\n\n📊 **Market Data:**\n• **Price:** ${tokenInfoService.formatPrice(tokenInfo.price)}\n• **Market Cap:** ${tokenInfoService.formatMarketCap(tokenInfo.marketCap)}\n• **24h Volume:** ${tokenInfoService.formatVolume(tokenInfo.volume24h)}\n• **24h Change:** ${tokenInfoService.formatPriceChange(tokenInfo.priceChange24h)}\n\n🔗 **Links Found:**\n${tokenInfo.telegramGroup ? `• [Telegram Group](${tokenInfo.telegramGroup})\n` : ''}${tokenInfo.twitterHandle ? `• [Twitter](${tokenInfo.twitterHandle})\n` : ''}${tokenInfo.website ? `• [Website](${tokenInfo.website})\n` : ''}`);
+    } else {
+      await sendTyping(ctx);
+      await ctx.reply(`ℹ️ **Token information not found**\n\nI couldn't find market data for your token on the selected chains. This is normal for new or private tokens. You can still register and match with other projects!`);
+    }
+  } catch (error) {
+    console.error('Error fetching token info:', error);
+    await sendTyping(ctx);
+    await ctx.reply(`ℹ️ **Token information fetch failed**\n\nThere was an issue fetching market data, but you can still register your token and start matching!`);
+  }
+
+  await sendTyping(ctx);
+  await ctx.reply(`**Step 5/7:** What's your token's market cap range?\n\nThis helps with better matching:`, {
     parse_mode: 'Markdown',
     reply_markup: createMarketCapKeyboard()
   });
@@ -548,7 +572,21 @@ export async function onboardingConversation(conversation: Conversation<MyContex
       telegram_channel: telegramChannel,
       admin_handles: adminHandles,
       is_active: true,
-      verified: true // Auto-verify since we're removing verification
+      verified: true, // Auto-verify since we're removing verification
+      // Add token info if available
+      ...(tokenInfo && {
+        token_symbol: tokenInfo.symbol,
+        token_price: tokenInfo.price || undefined,
+        token_price_change_24h: tokenInfo.priceChange24h || undefined,
+        token_volume_24h: tokenInfo.volume24h || undefined,
+        token_market_cap_api: tokenInfo.marketCap || undefined,
+        token_telegram_group_api: tokenInfo.telegramGroup || undefined,
+        token_twitter_handle: tokenInfo.twitterHandle || undefined,
+        token_website: tokenInfo.website || undefined,
+        token_description: tokenInfo.description || undefined,
+        token_logo_url: tokenInfo.logoUrl || undefined,
+        token_info_last_updated: new Date()
+      })
     };
 
     const project = await dbService.createProject(projectData);

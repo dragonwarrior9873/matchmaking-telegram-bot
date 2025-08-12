@@ -82,6 +82,41 @@ export class DatabaseService {
     }
   }
 
+  async updateTokenInfo(id: string, tokenInfo: {
+    token_symbol?: string;
+    token_price?: number;
+    token_price_change_24h?: number;
+    token_volume_24h?: number;
+    token_market_cap_api?: number;
+    token_telegram_group_api?: string;
+    token_twitter_handle?: string;
+    token_website?: string;
+    token_description?: string;
+    token_logo_url?: string;
+  }): Promise<Project | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return null;
+      }
+      
+      const updates = {
+        ...tokenInfo,
+        token_info_last_updated: new Date()
+      };
+      
+      const project = await ProjectModel.findByIdAndUpdate(
+        id, 
+        { $set: updates }, 
+        { new: true, runValidators: true }
+      );
+      
+      return project ? toJSON(project) : null;
+    } catch (error) {
+      console.error('Error updating token info:', error);
+      return null;
+    }
+  }
+
   // Admin operations
   async createAdmin(adminData: Omit<Admin, 'id' | '_id' | 'created_at'>): Promise<Admin> {
     try {

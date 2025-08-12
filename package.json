@@ -11,20 +11,27 @@
     "seed": "node dist/database/migrate.js seed"
   },
   "dependencies": {
-    "grammy": "^1.21.1",
     "@grammyjs/conversations": "^1.2.0",
     "@grammyjs/menu": "^1.2.1",
-    "mongoose": "^8.0.3",
+    "axios": "^1.11.0",
     "dotenv": "^16.3.1",
+    "grammy": "^1.21.1",
+    "mongoose": "^8.0.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
     "@types/uuid": "^9.0.7",
-    "typescript": "^5.2.2",
-    "tsx": "^4.6.0"
+    "tsx": "^4.6.0",
+    "typescript": "^5.2.2"
   },
-  "keywords": ["telegram", "bot", "matchmaking", "crypto", "ama"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "matchmaking",
+    "crypto",
+    "ama"
+  ],
   "author": "Torres",
   "license": "MIT"
 }

@@ -7,6 +7,19 @@ export interface Project {
   chains: string[];
   market_cap: string;
 
+  // Token info from APIs
+  token_symbol?: string;
+  token_price?: number;
+  token_price_change_24h?: number;
+  token_volume_24h?: number;
+  token_market_cap_api?: number;
+  token_telegram_group_api?: string;
+  token_twitter_handle?: string;
+  token_website?: string;
+  token_description?: string;
+  token_logo_url?: string;
+  token_info_last_updated?: Date;
+
   telegram_group?: string;
   telegram_channel?: string;
   admin_handles: string[];

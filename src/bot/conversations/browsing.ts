@@ -295,14 +295,70 @@ async function createProjectCard(
   card += `⛓️ **Chains:** ${project.chains.join(", ")}\n`;
   card += `💰 **Market Cap:** ${project.market_cap}\n`;
 
-  if (project.telegram_group || project.telegram_channel) {
+  // Add real-time market data if available
+  if (project.token_price || project.token_market_cap_api || project.token_volume_24h) {
+    card += `\n📊 **Live Market Data:**\n`;
+    if (project.token_price) {
+      const priceChange = project.token_price_change_24h;
+      const changeEmoji = priceChange && priceChange >= 0 ? '📈' : '📉';
+      const changeText = priceChange ? ` (${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%)` : '';
+      card += `• **Price:** $${project.token_price.toFixed(6)}${changeText} ${changeEmoji}\n`;
+    }
+    if (project.token_market_cap_api) {
+      const marketCap = project.token_market_cap_api;
+      let formattedMarketCap = '';
+      if (marketCap >= 1e12) {
+        formattedMarketCap = `$${(marketCap / 1e12).toFixed(2)}T`;
+      } else if (marketCap >= 1e9) {
+        formattedMarketCap = `$${(marketCap / 1e9).toFixed(2)}B`;
+      } else if (marketCap >= 1e6) {
+        formattedMarketCap = `$${(marketCap / 1e6).toFixed(2)}M`;
+      } else if (marketCap >= 1e3) {
+        formattedMarketCap = `$${(marketCap / 1e3).toFixed(2)}K`;
+      } else {
+        formattedMarketCap = `$${marketCap.toFixed(2)}`;
+      }
+      card += `• **Market Cap:** ${formattedMarketCap}\n`;
+    }
+    if (project.token_volume_24h) {
+      const volume = project.token_volume_24h;
+      let formattedVolume = '';
+      if (volume >= 1e12) {
+        formattedVolume = `$${(volume / 1e12).toFixed(2)}T`;
+      } else if (volume >= 1e9) {
+        formattedVolume = `$${(volume / 1e9).toFixed(2)}B`;
+      } else if (volume >= 1e6) {
+        formattedVolume = `$${(volume / 1e6).toFixed(2)}M`;
+      } else if (volume >= 1e3) {
+        formattedVolume = `$${(volume / 1e3).toFixed(2)}K`;
+      } else {
+        formattedVolume = `$${volume.toFixed(2)}`;
+      }
+      card += `• **24h Volume:** ${formattedVolume}\n`;
+    }
+  }
+
+  // Add social links if available
+  const socialLinks = [];
+  if (project.telegram_group) {
+    socialLinks.push(`[Telegram Group](${project.telegram_group})`);
+  }
+  if (project.telegram_channel) {
+    socialLinks.push(`[Announcement Channel](${project.telegram_channel})`);
+  }
+  if (project.token_telegram_group_api) {
+    socialLinks.push(`[Official Telegram](${project.token_telegram_group_api})`);
+  }
+  if (project.token_twitter_handle) {
+    socialLinks.push(`[Twitter](${project.token_twitter_handle})`);
+  }
+  if (project.token_website) {
+    socialLinks.push(`[Website](${project.token_website})`);
+  }
+
+  if (socialLinks.length > 0) {
     card += `\n📱 **Community:**\n`;
-    if (project.telegram_group) {
-      card += `• [Telegram Group](${project.telegram_group})\n`;
-    }
-    if (project.telegram_channel) {
-      card += `• [Announcement Channel](${project.telegram_channel})\n`;
-    }
+    card += socialLinks.map(link => `• ${link}`).join('\n') + '\n';
   }
 
   card += `📅 **Registered:** ${
