@@ -27,6 +27,16 @@ const ProjectSchema = new Schema<Project & Document>({
     type: String,
     required: true
   },
+  categories: [{
+    type: String,
+    required: false
+  }],
+  description: {
+    type: String,
+    required: false,
+    trim: true,
+    maxlength: 500
+  },
   
   // Token info from APIs
   token_symbol: {

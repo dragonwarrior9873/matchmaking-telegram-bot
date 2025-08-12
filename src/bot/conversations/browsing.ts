@@ -294,6 +294,16 @@ async function createProjectCard(
   card += `🔗 **Contract:** \`${project.contract_address}\`\n`;
   card += `⛓️ **Chains:** ${project.chains.join(", ")}\n`;
   card += `💰 **Market Cap:** ${project.market_cap}\n`;
+  
+  // Add categories if available
+  if (project.categories && project.categories.length > 0) {
+    card += `🏷️ **Categories:** ${project.categories.join(", ")}\n`;
+  }
+  
+  // Add description if available
+  if (project.description) {
+    card += `📝 **Description:** ${project.description}\n`;
+  }
 
   // Add real-time market data if available
   if (project.token_price || project.token_market_cap_api || project.token_volume_24h) {

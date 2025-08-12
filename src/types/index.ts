@@ -6,6 +6,8 @@ export interface Project {
   contract_address: string;
   chains: string[];
   market_cap: string;
+  categories?: string[];
+  description?: string;
 
   // Token info from APIs
   token_symbol?: string;
@@ -89,6 +91,19 @@ export enum MarketCap {
   RANGE_10_100M = '10-100M',
   RANGE_100M_PLUS = '100M+',
   MATCH_ANYTHING = '🤑 Will Match with ANYTHING 🤑'
+}
+
+export enum Category {
+  MEME_COIN = 'Meme Coin',
+  KOL = 'KOL',
+  AI = 'AI',
+  METAVERSE = 'Metaverse',
+  PLAY_TO_EARN = 'Play-to-Earn',
+  BLOCKCHAIN = 'Blockchain',
+  LAUNCHPAD = 'Launchpad',
+  NFTS = 'NFTs',
+  TELEGRAM_BOT = 'Telegram Bot',
+  CTO = 'CTO'
 }
 
 
