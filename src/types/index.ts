@@ -82,7 +82,8 @@ export enum Chain {
   AVALANCHE = 'Avalanche',
   SUI = 'SUI',
   XRP = 'XRP',
-  TON = 'TON'
+  TON = 'TON',
+  SONIC = 'SONIC'
 }
 
 export enum MarketCap {

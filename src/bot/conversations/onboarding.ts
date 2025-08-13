@@ -135,10 +135,10 @@ if (projectName.startsWith('/start')) {
 const iconPath = path.join(__dirname, '../../../assets/icon.jpg');
 const keyboard = await createMenuKeyboard(user.id);
 
-let welcomeMessage = ` Congratulations — you've made it to Matchmaker!\n\n`;
+let welcomeMessage = `💖 Congratulations — you've made it to Matchmaker!\n\n`;
 welcomeMessage += `Struggling to make connections out there? Don't worry — Matchmaker has got you covered.\n\n`;
 welcomeMessage += `Before we can pair you with your perfect block-mates, we need to get to know your project. You're just a few clicks away from meeting your perfect soul-projects.\n\n`;
-welcomeMessage += `Tap "Set Me Up" below to mint your profile. `;
+welcomeMessage += `Tap "Set Me Up" below to mint your profile. 💖`;
 
 await ctx.replyWithPhoto(new InputFile(iconPath), {
 caption: welcomeMessage,
@@ -230,20 +230,7 @@ await chainResponse.answerCallbackQuery('✅ Chains selected!');
 // Ignore callback query timeout errors
 console.log('Callback query timeout - continuing...');
 }
-} else if (chainData === 'chain_not_picky') {
-// Select all chains when "I'm not picky" is selected
-selectedChains.length = 0; // Clear current selection
-selectedChains.push(...Object.values(Chain));
-chainSelectionDone = true;
 
-try {
-await chainResponse.answerCallbackQuery('✅ All chains selected!');
-} catch (error) {
-// Ignore callback query timeout errors
-console.log('Callback query timeout - continuing...');
-}
-
-await sendSimpleMessage(ctx, `✅ Selected: **I'm not picky** (All chains)`);
 } else if (chainData.startsWith('chain_')) {
 const chain = chainData.replace('chain_', '') as Chain;
 
@@ -308,7 +295,7 @@ return;
 }
 
 await sendTyping(ctx);
-await ctx.reply(`**Step 5/8:** What's your X (Twitter) account?\n\n*Please provide your X handle (e.g., @yourproject) or skip this step.*`, {
+await ctx.reply(`**Step 5/8:** What's your X (Twitter) account?\n\n*Please provide your X handle (e.g., @yourproject).*`, {
 parse_mode: 'Markdown'
 });
 
@@ -420,7 +407,7 @@ let categoriesText = selectedCategories.length > 0 ? selectedCategories.join(', 
 await sendSimpleMessage(ctx, `✅ Selected categories: **${categoriesText}**`);
 
 await sendTyping(ctx);
-await ctx.reply(`**Step 7/8:** Describe your project in one sentence\n\n*Remember your project match is watching*\n\nEnter your project description:`, {
+await ctx.reply(`**Step 7/8:** Describe your project in one sentence\n\n*Enter your project description:`, {
 parse_mode: 'Markdown'
 });
 
@@ -791,8 +778,7 @@ keyboard.text(button2Text, `chain_${chain2}`);
 keyboard.row();
 }
 
-// Add "I'm not picky" option
-keyboard.text(' IM NOT PICKY ', 'chain_not_picky').row();
+
 keyboard.text('✅ Done', 'chains_done');
 return keyboard;
 }
@@ -954,18 +940,7 @@ await chainResponse.answerCallbackQuery('✅ Chains updated!');
 } catch (error) {
 console.log('Callback query timeout - continuing...');
 }
-} else if (chainData === 'chain_not_picky') {
-selectedChains.length = 0;
-selectedChains.push(...Object.values(Chain));
-chainSelectionDone = true;
 
-try {
-await chainResponse.answerCallbackQuery('✅ All chains selected!');
-} catch (error) {
-console.log('Callback query timeout - continuing...');
-}
-
-await sendSimpleMessage(ctx, `✅ Updated: **I'm not picky** (All chains)`);
 } else if (chainData.startsWith('chain_')) {
 const chain = chainData.replace('chain_', '') as Chain;
 
