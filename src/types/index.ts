@@ -24,6 +24,7 @@ export interface Project {
 
   telegram_group?: string;
   telegram_channel?: string;
+  x_account?: string;
   admin_handles: string[];
   created_at?: Date;
   updated_at?: Date;

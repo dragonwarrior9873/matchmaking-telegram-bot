@@ -109,7 +109,7 @@ npm start
 ### 2. Token Discovery  
 1. User chooses "👀 Browse Tokens"
 2. Bot shows token cards one by one
-3. User clicks 👍 Like or 👎 Pass
+3. User clicks PUMP 💖 or DUMP 💔
 4. If mutual like → Match created!
 
 ### 3. Match Flow

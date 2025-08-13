@@ -99,6 +99,11 @@ const ProjectSchema = new Schema<Project & Document>({
     required: false,
     trim: true 
   },
+  x_account: { 
+    type: String, 
+    required: false,
+    trim: true 
+  },
   admin_handles: [{ 
     type: String, 
     required: true 
