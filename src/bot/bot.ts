@@ -14,6 +14,21 @@ type MyContext = Context & SessionFlavor<ConversationData> & ConversationFlavor<
 // Create the bot instance
 export const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
 
+// Set bot description
+const description = `👋 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐓𝐨 𝐌𝐚𝐭𝐜𝐡𝐦𝐚𝐤𝐞𝐫
+
+It's time to boost your networking game.
+
+Connect with token projects across all chains, grow your community, and spark real collaborations — all with a simple swipe.
+
+𝐌𝐚𝐭𝐜𝐡𝐦𝐚𝐤𝐞𝐫 is your swipe-based connection bot, where you can match directly with 𝐂𝐄𝐎𝐒 𝐚𝐧𝐝 𝐭𝐨𝐩 𝐚𝐝𝐦𝐢𝐧𝐬 𝐟𝐨𝐫 𝐅𝐑𝐄𝐄 𝐀𝐌𝐀𝐒, 𝐗 𝐒𝐩𝐚𝐜𝐞𝐬, 𝐚𝐧𝐝 𝐜𝐨𝐥𝐥𝐚𝐛𝐬. Think 𝐓𝐢𝐧𝐝𝐞𝐫, but for building serious Web3 relationships.
+
+Hit 𝐒𝐭𝐚𝐫𝐭 below to get matched with projects you'll actually want to talk to.
+
+𝐒𝐰𝐢𝐩𝐞. 𝐌𝐚𝐭𝐜𝐡. 𝐌𝐨𝐨𝐧 𝐓𝐨𝐠𝐞𝐭𝐡𝐞𝐫. 🚀`;
+
+bot.api.setMyDescription(description);
+
 // Install session middleware
 bot.use(session({
   initial: (): ConversationData => ({}),
