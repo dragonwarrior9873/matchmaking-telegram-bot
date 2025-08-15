@@ -102,19 +102,43 @@ export class NotificationService {
         .flat()
         .map((admin) => admin.username || `user_${admin.telegram_id}`);
 
-      // Send notification to Project A admins
-      for (const adminId of projectAAdmins) {
-        try {
-          const matchMessage =
-            `🎉 **MATCH FOUND!**\n\n` +
-            `**Your Project:** ${projectA.name}\n` +
-            `**Matched With:** ${projectB.name}\n\n` +
-            `💬 **Create AMA Group**\n` +
-            `Contact the admin(s) of **${projectB.name}** to create a group for your AMA collaboration:\n\n` +
-            `👤 **${projectB.name} Admin(s):**\n` +
-            projectBHandles.map((handle) => `@${handle}`).join("\n") +
-            "\n\n" +
-            `💞 **Congratulations on your match!**`;
+             // Send notification to Project A admins
+       for (const adminId of projectAAdmins) {
+         try {
+           const matchMessage =
+             `⚡ **IT'S A MATCH!** — and they're ready to collaborate!\n\n` +
+             `💕 **Token:** ${projectB.name}\n\n` +
+             `💕 **Project Info:**\n` +
+             `• **Chains:** ${projectB.chains?.join(', ') || 'Not specified'}\n` +
+             `• **Categories:** ${projectB.categories?.join(', ') || 'Not specified'}\n` +
+             `• **Description:** ${projectB.description || 'No description available'}\n\n` +
+             `💞 **Live Market Data:**\n` +
+             `${projectB.token_price ? `• **Price:** $${projectB.token_price.toFixed(6)}${projectB.token_price_change_24h ? ` (${projectB.token_price_change_24h >= 0 ? '+' : ''}${projectB.token_price_change_24h.toFixed(2)}%)` : ''}\n` : ''}` +
+             `${projectB.token_market_cap_api ? `• **Market Cap:** ${(() => {
+               const marketCap = projectB.token_market_cap_api;
+               if (marketCap >= 1e12) return `$${(marketCap / 1e12).toFixed(2)}T`;
+               if (marketCap >= 1e9) return `$${(marketCap / 1e9).toFixed(2)}B`;
+               if (marketCap >= 1e6) return `$${(marketCap / 1e6).toFixed(2)}M`;
+               if (marketCap >= 1e3) return `$${(marketCap / 1e3).toFixed(2)}K`;
+               return `$${marketCap.toFixed(2)}`;
+             })()}\n` : ''}` +
+             `${projectB.token_volume_24h ? `• **24h Volume:** ${(() => {
+               const volume = projectB.token_volume_24h;
+               if (volume >= 1e12) return `$${(volume / 1e12).toFixed(2)}T`;
+               if (volume >= 1e9) return `$${(volume / 1e9).toFixed(2)}B`;
+               if (volume >= 1e6) return `$${(volume / 1e6).toFixed(2)}M`;
+               if (volume >= 1e3) return `$${(volume / 1e3).toFixed(2)}K`;
+               return `$${volume.toFixed(2)}`;
+             })()}\n` : ''}` +
+             `\n` +
+             `💕 **Community:**\n` +
+             `• **Telegram Group**\n` +
+             `• **X (Twitter)**\n\n` +
+             `**Registered:** ${projectB.created_at?.toLocaleDateString() || 'Recently'}\n\n` +
+             `**Contract:** ${projectB.contract_address || 'Not provided'}\n\n` +
+             `🗨️ **Ready to collab?** ${projectB.name} team are waiting for your DM.\n\n` +
+             `🐺 **${projectB.name} Team:** ${projectBHandles.map((handle) => `@${handle}`).join(', ')}\n\n` +
+             `💕 **More Matches are Waiting!**`;
 
                      await bot.api.sendMessage(adminId, matchMessage, {
              parse_mode: "Markdown",
@@ -135,19 +159,43 @@ export class NotificationService {
         }
       }
 
-      // Send notification to Project B admins
-      for (const adminId of projectBAdmins) {
-        try {
-          const matchMessage =
-            `🎉 **MATCH FOUND!**\n\n` +
-            `**Your Project:** ${projectB.name}\n` +
-            `**Matched With:** ${projectA.name}\n\n` +
-            `💬 **Create AMA Group**\n` +
-            `Contact the admin(s) of **${projectA.name}** to create a group for your AMA collaboration:\n\n` +
-            `👤 **${projectA.name} Admin(s):**\n` +
-            projectAHandles.map((handle) => `@${handle}`).join("\n") +
-            "\n\n" +
-            `💞 **Congratulations on your match!**`;
+             // Send notification to Project B admins
+       for (const adminId of projectBAdmins) {
+         try {
+           const matchMessage =
+             `⚡ **IT'S A MATCH!** — and they're ready to collaborate!\n\n` +
+             `💕 **Token:** ${projectA.name}\n\n` +
+             `💕 **Project Info:**\n` +
+             `• **Chains:** ${projectA.chains?.join(', ') || 'Not specified'}\n` +
+             `• **Categories:** ${projectA.categories?.join(', ') || 'Not specified'}\n` +
+             `• **Description:** ${projectA.description || 'No description available'}\n\n` +
+             `💞 **Live Market Data:**\n` +
+             `${projectA.token_price ? `• **Price:** $${projectA.token_price.toFixed(6)}${projectA.token_price_change_24h ? ` (${projectA.token_price_change_24h >= 0 ? '+' : ''}${projectA.token_price_change_24h.toFixed(2)}%)` : ''}\n` : ''}` +
+             `${projectA.token_market_cap_api ? `• **Market Cap:** ${(() => {
+               const marketCap = projectA.token_market_cap_api;
+               if (marketCap >= 1e12) return `$${(marketCap / 1e12).toFixed(2)}T`;
+               if (marketCap >= 1e9) return `$${(marketCap / 1e9).toFixed(2)}B`;
+               if (marketCap >= 1e6) return `$${(marketCap / 1e6).toFixed(2)}M`;
+               if (marketCap >= 1e3) return `$${(marketCap / 1e3).toFixed(2)}K`;
+               return `$${marketCap.toFixed(2)}`;
+             })()}\n` : ''}` +
+             `${projectA.token_volume_24h ? `• **24h Volume:** ${(() => {
+               const volume = projectA.token_volume_24h;
+               if (volume >= 1e12) return `$${(volume / 1e12).toFixed(2)}T`;
+               if (volume >= 1e9) return `$${(volume / 1e9).toFixed(2)}B`;
+               if (volume >= 1e6) return `$${(volume / 1e6).toFixed(2)}M`;
+               if (volume >= 1e3) return `$${(volume / 1e3).toFixed(2)}K`;
+               return `$${volume.toFixed(2)}`;
+             })()}\n` : ''}` +
+             `\n` +
+             `💕 **Community:**\n` +
+             `• **Telegram Group**\n` +
+             `• **X (Twitter)**\n\n` +
+             `**Registered:** ${projectA.created_at?.toLocaleDateString() || 'Recently'}\n\n` +
+             `**Contract:** ${projectA.contract_address || 'Not provided'}\n\n` +
+             `🗨️ **Ready to collab?** ${projectA.name} team are waiting for your DM.\n\n` +
+             `🐺 **${projectA.name} Team:** ${projectAHandles.map((handle) => `@${handle}`).join(', ')}\n\n` +
+             `💕 **More Matches are Waiting!**`;
 
                      await bot.api.sendMessage(adminId, matchMessage, {
              parse_mode: "Markdown",
