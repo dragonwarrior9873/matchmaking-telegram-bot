@@ -99,9 +99,16 @@ export async function browsingConversation(
   );
 
   if (availableProjects.length === 0) {
-    await sendSimpleMessage(
-      ctx,
-      `**No more tokens to browse!**\n\nYou've already seen all available tokens. Check back later for new tokens, or use /matches to see your current matches.`
+    await ctx.reply(
+      `**No more tokens to browse!**\n\nYou've already seen all available tokens. Check back later for new tokens, or use /matches to see your current matches.`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: 'Main Menu', callback_data: 'return_to_menu' }
+          ]]
+        }
+      }
     );
     return;
   }
@@ -303,9 +310,16 @@ export async function browsingConversation(
   }
 
   if (!browsingStopped) {
-    await sendSimpleMessage(
-      ctx,
-      `**Browsing complete!**\n\nYou've seen all ${availableProjects.length} available tokens. Check back later for new tokens or use /matches to see your matches!`
+    await ctx.reply(
+      `**Browsing complete!**\n\nYou've seen all ${availableProjects.length} available tokens. Check back later for new tokens or use /matches to see your matches!`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: 'Main Menu', callback_data: 'return_to_menu' }
+          ]]
+        }
+      }
     );
   }
 }
