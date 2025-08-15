@@ -455,7 +455,7 @@ async function editTelegram(
   ctx: MyContext,
   project: Project
 ) {
-  await sendWithIcon(ctx, '🔧 **Telegram Settings Update**\n\nThis will launch the Telegram setup wizard to update your group and channel connections.');
+  await sendWithIcon(ctx, '🔧 **Telegram Group Update**\n\nThis will launch the Telegram setup wizard to update your group connection.');
   
   let telegramGroup = project.telegram_group;
   let telegramChannel = project.telegram_channel;
@@ -491,12 +491,6 @@ async function editTelegram(
         telegramChannel = result.channelUrl;
       }
       await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
-    } else if (telegramAction === "telegram_edit_group") {
-      const result = await handleEnhancedGroupSelection(conversation, ctx);
-      if (result.success) {
-        telegramGroup = result.groupUrl;
-      }
-      await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
     } else if (telegramAction === "telegram_edit_channel") {
       const result = await handleEnhancedChannelSelection(conversation, ctx);
       if (result.success) {
@@ -524,8 +518,8 @@ async function editTelegram(
     telegram_channel: telegramChannel 
   });
 
-  if (telegramGroup || telegramChannel) {
-    await sendWithIcon(ctx, '✅ **Telegram connections updated successfully!**');
+  if (telegramGroup) {
+    await sendWithIcon(ctx, '✅ **Telegram group updated successfully!**');
   } else {
     await sendWithIcon(ctx, '⏭️ **Telegram setup unchanged.**');
   }

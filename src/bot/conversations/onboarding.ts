@@ -53,9 +53,11 @@ async function safeDeleteMessage(ctx: MyContext, messageId: number) {
     await ctx.api.deleteMessage(ctx.chat!.id, messageId);
   } catch (error: any) {
     // Silently ignore common expected errors
-    if (error?.description?.includes('message to delete not found') || 
-        error?.description?.includes('message can\'t be deleted') ||
-        error?.error_code === 400) {
+    if (
+      error?.description?.includes("message to delete not found") ||
+      error?.description?.includes("message can't be deleted") ||
+      error?.error_code === 400
+    ) {
       // These are expected errors - message already deleted, too old, etc.
       return;
     }
@@ -72,53 +74,45 @@ function convertToHtml(markdownText: string): string {
     .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>'); // [text](url) -> <a href="url">text</a>
 }
 
-// Enhanced Telegram setup with better UX
+// Enhanced Telegram setup with better UX - Group Only
 export async function showTelegramSetupHub(
   ctx: MyContext,
   telegramGroup: string | undefined,
   telegramChannel: string | undefined
 ) {
-  let hubMessage = "🚀 **Connect Your Telegram Community**\n\n";
-  hubMessage += "Let's connect your Telegram spaces so your community can discover and engage with potential collaborations!\n\n";
-  
+  let hubMessage = "🚀 **Connect Your Telegram Group**\n\n";
+  hubMessage +=
+    "Connect your main Telegram group so your community can discover and engage with potential collaborations!\n\n";
+
   // Show current status with visual indicators
   hubMessage += "**Current Setup:**\n";
-  hubMessage += `🏠 **Main Group:** ${telegramGroup ? "✅ Connected" : "⚪ Not connected"}\n`;
+  hubMessage += `🏠 **Main Group:** ${
+    telegramGroup ? "✅ Connected" : "⚪ Not connected"
+  }\n`;
   if (telegramGroup) {
     hubMessage += `   └ ${getTelegramDisplayName(telegramGroup)}\n`;
   }
-  hubMessage += `📢 **Announcement Channel:** ${telegramChannel ? "✅ Connected" : "⚪ Not connected"}\n`;
-  if (telegramChannel) {
-    hubMessage += `   └ ${getTelegramDisplayName(telegramChannel)}\n`;
-  }
-  
-  hubMessage += "\n**Quick Setup Options:**";
+
+  hubMessage += "\n**Setup Options:**";
 
   const keyboard = new InlineKeyboard();
-  
-  // Smart setup options based on current state
-  if (!telegramGroup && !telegramChannel) {
-    keyboard.text("⚡ Quick Setup (Both)", "telegram_quick_setup")
+
+  // Simplified options - only group
+  if (!telegramGroup) {
+    keyboard
+      .text("🏠 Add Telegram Group", "telegram_add_group")
       .row()
-      .text("🏠 Add Group Only", "telegram_add_group")
-      .text("📢 Add Channel Only", "telegram_add_channel");
-  } else if (!telegramGroup) {
-    keyboard.text("🏠 Add Group", "telegram_add_group")
-      .text("⚡ Quick Setup", "telegram_quick_setup");
-  } else if (!telegramChannel) {
-    keyboard.text("📢 Add Channel", "telegram_add_channel")
-      .text("⚡ Quick Setup", "telegram_quick_setup");
+      .text("✍️ Enter Group URL Manually", "telegram_manual_entry");
   } else {
-    keyboard.text("✏️ Edit Group", "telegram_edit_group")
-      .text("✏️ Edit Channel", "telegram_edit_channel")
-      .row()
-      .text("🔄 Reset & Setup Again", "telegram_reset_setup");
+    keyboard.text("🔄 Change Group", "telegram_reset_setup");
   }
-  
-  keyboard.row()
-    .text("✍️ Enter URLs Manually", "telegram_manual_entry")
+
+  keyboard
     .row()
-    .text(telegramGroup || telegramChannel ? "✅ Continue" : "⏭️ Skip This Step", "telegram_setup_complete");
+    .text(
+      telegramGroup ? "✅ Continue" : "⏭️ Skip This Step",
+      "telegram_setup_complete"
+    );
 
   await ctx.reply(hubMessage, {
     parse_mode: "Markdown",
@@ -130,7 +124,7 @@ export async function showTelegramSetupHub(
 function getTelegramDisplayName(telegramUrl: string): string {
   try {
     const url = new URL(telegramUrl);
-    const pathParts = url.pathname.split('/');
+    const pathParts = url.pathname.split("/");
     const handle = pathParts[pathParts.length - 1];
     return `@${handle}`;
   } catch {
@@ -145,8 +139,8 @@ export async function handleEnhancedGroupSelection(
 ): Promise<{ success: boolean; groupUrl?: string; chatInfo?: any }> {
   await ctx.reply(
     "🏠 **Select Your Main Telegram Group**\n\n" +
-    "Choose the group where your community discusses and collaborates. This is where match notifications and partnership discussions will happen.\n\n" +
-    "👆 **Tap the button below** to select from your groups:",
+      "Choose the group where your community discusses and collaborates. This is where match notifications and partnership discussions will happen.\n\n" +
+      "👆 **Tap the button below** to select from your groups:",
     {
       parse_mode: "Markdown",
       reply_markup: {
@@ -176,7 +170,9 @@ export async function handleEnhancedGroupSelection(
     ]);
 
     // Remove keyboard
-    await ctx.reply("Processing...", { reply_markup: { remove_keyboard: true } });
+    await ctx.reply("Processing...", {
+      reply_markup: { remove_keyboard: true },
+    });
 
     if (response.message?.text?.toLowerCase().includes("cancel")) {
       await ctx.reply("❌ Group selection cancelled.");
@@ -186,7 +182,7 @@ export async function handleEnhancedGroupSelection(
     if (response.message?.chat_shared) {
       const chatId = response.message.chat_shared.chat_id;
       const chatTitle = response.message.chat_shared.title || "Selected Group";
-      
+
       // Create URL - handle both username and ID formats
       let groupUrl: string;
       if (response.message.chat_shared.username) {
@@ -198,27 +194,29 @@ export async function handleEnhancedGroupSelection(
       // Show confirmation with chat details
       await ctx.reply(
         `✅ **Group Selected Successfully!**\n\n` +
-        `📱 **Group:** ${chatTitle}\n` +
-        `🔗 **Link:** ${groupUrl}\n\n` +
-        `This group will receive match notifications and collaboration opportunities.`,
+          `📱 **Group:** ${chatTitle}\n` +
+          `🔗 **Link:** ${groupUrl}\n\n` +
+          `This group will receive match notifications and collaboration opportunities.`,
         { parse_mode: "Markdown" }
       );
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         groupUrl,
         chatInfo: {
           id: chatId,
           title: chatTitle,
-          username: response.message.chat_shared.username
-        }
+          username: response.message.chat_shared.username,
+        },
       };
     }
 
     return { success: false };
   } catch (error) {
     console.log("Enhanced group selection error:", error);
-    await ctx.reply("❌ Group selection failed. Please try again or skip this step.");
+    await ctx.reply(
+      "❌ Group selection failed. Please try again or skip this step."
+    );
     return { success: false };
   }
 }
@@ -230,8 +228,8 @@ export async function handleEnhancedChannelSelection(
 ): Promise<{ success: boolean; channelUrl?: string; chatInfo?: any }> {
   await ctx.reply(
     "📢 **Select Your Announcement Channel**\n\n" +
-    "Choose your channel for broadcasting partnership announcements and major updates to your wider community.\n\n" +
-    "👆 **Tap the button below** to select from your channels:",
+      "Choose your channel for broadcasting partnership announcements and major updates to your wider community.\n\n" +
+      "👆 **Tap the button below** to select from your channels:",
     {
       parse_mode: "Markdown",
       reply_markup: {
@@ -261,7 +259,9 @@ export async function handleEnhancedChannelSelection(
     ]);
 
     // Remove keyboard
-    await ctx.reply("Processing...", { reply_markup: { remove_keyboard: true } });
+    await ctx.reply("Processing...", {
+      reply_markup: { remove_keyboard: true },
+    });
 
     if (response.message?.text?.toLowerCase().includes("cancel")) {
       await ctx.reply("❌ Channel selection cancelled.");
@@ -270,8 +270,9 @@ export async function handleEnhancedChannelSelection(
 
     if (response.message?.chat_shared) {
       const chatId = response.message.chat_shared.chat_id;
-      const chatTitle = response.message.chat_shared.title || "Selected Channel";
-      
+      const chatTitle =
+        response.message.chat_shared.title || "Selected Channel";
+
       // Create URL - handle both username and ID formats
       let channelUrl: string;
       if (response.message.chat_shared.username) {
@@ -283,108 +284,104 @@ export async function handleEnhancedChannelSelection(
       // Show confirmation with chat details
       await ctx.reply(
         `✅ **Channel Selected Successfully!**\n\n` +
-        `📢 **Channel:** ${chatTitle}\n` +
-        `🔗 **Link:** ${channelUrl}\n\n` +
-        `This channel will broadcast partnership announcements and collaboration opportunities.`,
+          `📢 **Channel:** ${chatTitle}\n` +
+          `🔗 **Link:** ${channelUrl}\n\n` +
+          `This channel will broadcast partnership announcements and collaboration opportunities.`,
         { parse_mode: "Markdown" }
       );
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         channelUrl,
         chatInfo: {
           id: chatId,
           title: chatTitle,
-          username: response.message.chat_shared.username
-        }
+          username: response.message.chat_shared.username,
+        },
       };
     }
 
     return { success: false };
   } catch (error) {
     console.log("Enhanced channel selection error:", error);
-    await ctx.reply("❌ Channel selection failed. Please try again or skip this step.");
+    await ctx.reply(
+      "❌ Channel selection failed. Please try again or skip this step."
+    );
     return { success: false };
   }
 }
 
-// Quick setup flow for both group and channel
+// Simplified setup flow for group only
 export async function handleQuickTelegramSetup(
   conversation: Conversation<MyContext>,
   ctx: MyContext
-): Promise<{ groupUrl?: string; channelUrl?: string; groupInfo?: any; channelInfo?: any }> {
+): Promise<{
+  groupUrl?: string;
+  channelUrl?: string;
+  groupInfo?: any;
+  channelInfo?: any;
+}> {
   await ctx.reply(
-    "⚡ **Quick Setup - Connect Both**\n\n" +
-    "Let's connect both your main group and announcement channel in one go!\n\n" +
-    "**Step 1 of 2:** First, let's select your main group 👇",
+    "🏠 **Connect Your Telegram Group**\n\n" +
+      "Let's connect your main Telegram group where your community gathers!\n\n" +
+      "Please select your group from the list below 👇",
     { parse_mode: "Markdown" }
   );
 
-  // Step 1: Group selection
+  // Group selection only
   const groupResult = await handleEnhancedGroupSelection(conversation, ctx);
-  
+
   if (!groupResult.success) {
     return {};
   }
 
-  await sendTyping(ctx);
-  await ctx.reply(
-    "🎉 **Great! Group connected.**\n\n" +
-    "**Step 2 of 2:** Now let's select your announcement channel 👇",
-    { parse_mode: "Markdown" }
-  );
-
-  // Step 2: Channel selection
-  const channelResult = await handleEnhancedChannelSelection(conversation, ctx);
-
   // Show final summary
   await sendTyping(ctx);
-  let summaryMessage = "🚀 **Quick Setup Complete!**\n\n";
-  
-  if (groupResult.success && channelResult.success) {
-    summaryMessage += "✅ **Both Connected Successfully:**\n";
-    summaryMessage += `🏠 **Group:** ${groupResult.chatInfo?.title || 'Connected'}\n`;
-    summaryMessage += `📢 **Channel:** ${channelResult.chatInfo?.title || 'Connected'}\n\n`;
-    summaryMessage += "Your community is now ready to discover and engage with potential collaborations!";
-  } else if (groupResult.success) {
-    summaryMessage += "✅ **Group Connected:**\n";
-    summaryMessage += `🏠 **Group:** ${groupResult.chatInfo?.title || 'Connected'}\n\n`;
-    summaryMessage += "📢 Channel setup was skipped. You can add it later if needed.";
+  let summaryMessage = "🚀 **Group Setup Complete!**\n\n";
+
+  if (groupResult.success) {
+    summaryMessage += "✅ **Group Connected Successfully:**\n";
+    summaryMessage += `🏠 **Group:** ${
+      groupResult.chatInfo?.title || "Connected"
+    }\n\n`;
+    summaryMessage += "Your community group is now connected!";
   } else {
-    summaryMessage += "⚠️ Setup was not completed. You can try again later or add connections manually.";
+    summaryMessage += "⚠️ Setup was not completed. You can try again later.";
   }
 
   await ctx.reply(summaryMessage, { parse_mode: "Markdown" });
 
   return {
     groupUrl: groupResult.groupUrl,
-    channelUrl: channelResult.success ? channelResult.channelUrl : undefined,
+    channelUrl: undefined, // No channel in simplified setup
     groupInfo: groupResult.chatInfo,
-    channelInfo: channelResult.success ? channelResult.chatInfo : undefined
+    channelInfo: undefined,
   };
 }
 
-// Enhanced manual entry with better validation and UX
+// Enhanced manual entry with better validation and UX - Group Only
 export async function handleEnhancedManualEntry(
   conversation: Conversation<MyContext>,
   ctx: MyContext
 ): Promise<{ groupUrl?: string; channelUrl?: string }> {
   await ctx.reply(
-    "✍️ **Manual Entry**\n\n" +
-    "Enter your Telegram URLs manually. You can add one or both.\n\n" +
-    "**Supported formats:**\n" +
-    "• `https://t.me/your_group_name`\n" +
-    "• `@your_group_name`\n" +
-    "• `t.me/your_group_name`\n\n" +
-    "**First, enter your main group URL** (or type 'skip'):",
-    { 
+    "✍️ **Manual Group Entry**\n\n" +
+      "Enter your Telegram group URL manually.\n\n" +
+      "**Supported formats:**\n" +
+      "• `https://t.me/your_group_name`\n" +
+      "• `@your_group_name`\n" +
+      "• `t.me/your_group_name`\n\n" +
+      "**Enter your main group URL** (or type 'skip'):",
+    {
       parse_mode: "Markdown",
-      reply_markup: new InlineKeyboard().text("⏭️ Skip Group", "manual_skip_group")
+      reply_markup: new InlineKeyboard().text(
+        "⏭️ Skip Group",
+        "manual_skip_group"
+      ),
     }
   );
 
   let groupUrl: string | undefined;
-  let channelUrl: string | undefined;
 
   // Group URL input
   const groupResponse = await conversation.waitFor([
@@ -402,57 +399,19 @@ export async function handleEnhancedManualEntry(
   } else if (groupResponse.message?.text) {
     const input = groupResponse.message.text.trim();
     const validatedUrl = validateAndNormalizeTelegramUrl(input, false);
-    
+
     if (validatedUrl) {
       groupUrl = validatedUrl;
-      await ctx.reply(`✅ **Group URL saved:** ${groupUrl}`, { parse_mode: "Markdown" });
+      await ctx.reply(`✅ **Group URL saved:** ${groupUrl}`, {
+        parse_mode: "Markdown",
+      });
     } else {
       await ctx.reply(
         "❌ **Invalid group URL format.** Please use formats like:\n" +
-        "• `https://t.me/your_group`\n" +
-        "• `@your_group`\n" +
-        "• `t.me/your_group`\n\n" +
-        "Group skipped for now.",
-        { parse_mode: "Markdown" }
-      );
-    }
-  }
-
-  // Channel URL input
-  await ctx.reply(
-    "**Now, enter your announcement channel URL** (or type 'skip'):",
-    { 
-      parse_mode: "Markdown",
-      reply_markup: new InlineKeyboard().text("⏭️ Skip Channel", "manual_skip_channel")
-    }
-  );
-
-  const channelResponse = await conversation.waitFor([
-    "message:text",
-    "callback_query:data",
-  ]);
-
-  if (channelResponse.callbackQuery?.data === "manual_skip_channel") {
-    try {
-      await channelResponse.answerCallbackQuery("✅ Skipped channel");
-    } catch (error) {
-      // Ignore callback query timeout errors
-    }
-    await ctx.reply("⏭️ Channel skipped.");
-  } else if (channelResponse.message?.text) {
-    const input = channelResponse.message.text.trim();
-    const validatedUrl = validateAndNormalizeTelegramUrl(input, true);
-    
-    if (validatedUrl) {
-      channelUrl = validatedUrl;
-      await ctx.reply(`✅ **Channel URL saved:** ${channelUrl}`, { parse_mode: "Markdown" });
-    } else {
-      await ctx.reply(
-        "❌ **Invalid channel URL format.** Please use formats like:\n" +
-        "• `https://t.me/your_channel`\n" +
-        "• `@your_channel`\n" +
-        "• `t.me/your_channel`\n\n" +
-        "Channel skipped for now.",
+          "• `https://t.me/your_group`\n" +
+          "• `@your_group`\n" +
+          "• `t.me/your_group`\n\n" +
+          "Group skipped for now.",
         { parse_mode: "Markdown" }
       );
     }
@@ -460,46 +419,45 @@ export async function handleEnhancedManualEntry(
 
   // Show final summary
   let summaryMessage = "✍️ **Manual Entry Complete**\n\n";
-  if (groupUrl && channelUrl) {
-    summaryMessage += "✅ **Both URLs saved successfully!**";
-  } else if (groupUrl) {
-    summaryMessage += "✅ **Group URL saved.** Channel was skipped.";
-  } else if (channelUrl) {
-    summaryMessage += "✅ **Channel URL saved.** Group was skipped.";
+  if (groupUrl) {
+    summaryMessage += "✅ **Group URL saved successfully!**";
   } else {
-    summaryMessage += "⚠️ **No URLs were added.** You can set them up later.";
+    summaryMessage += "⚠️ **No group URL was added.** You can set it up later.";
   }
 
   await ctx.reply(summaryMessage, { parse_mode: "Markdown" });
 
-  return { groupUrl, channelUrl };
+  return { groupUrl, channelUrl: undefined };
 }
 
 // Validate and normalize Telegram URLs
-function validateAndNormalizeTelegramUrl(input: string, isChannel: boolean = false): string | null {
-  if (!input || input.toLowerCase() === 'skip') return null;
-  
+function validateAndNormalizeTelegramUrl(
+  input: string,
+  isChannel: boolean = false
+): string | null {
+  if (!input || input.toLowerCase() === "skip") return null;
+
   let cleanInput = input.trim();
-  
+
   // Handle different input formats
-  if (cleanInput.startsWith('@')) {
+  if (cleanInput.startsWith("@")) {
     cleanInput = cleanInput.substring(1);
-  } else if (cleanInput.startsWith('t.me/')) {
+  } else if (cleanInput.startsWith("t.me/")) {
     cleanInput = cleanInput.substring(5);
-  } else if (cleanInput.startsWith('https://t.me/')) {
+  } else if (cleanInput.startsWith("https://t.me/")) {
     cleanInput = cleanInput.substring(13);
-  } else if (cleanInput.startsWith('http://t.me/')) {
+  } else if (cleanInput.startsWith("http://t.me/")) {
     cleanInput = cleanInput.substring(12);
   }
-  
+
   // Remove any trailing slashes or parameters
-  cleanInput = cleanInput.split('?')[0].split('/')[0];
-  
+  cleanInput = cleanInput.split("?")[0].split("/")[0];
+
   // Basic validation - must be alphanumeric with underscores, 5-32 chars
   if (!/^[a-zA-Z0-9_]{5,32}$/.test(cleanInput)) {
     return null;
   }
-  
+
   return `https://t.me/${cleanInput}`;
 }
 
@@ -695,6 +653,9 @@ export async function onboardingConversation(
   let previousStepMessageId: number | undefined;
 
   // Check if user already has a registered token
+  // Add a small delay to ensure database operations have completed
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   const existingAdmins = await dbService.getAdminsByTelegramId(user.id);
 
   if (existingAdmins.length > 0) {
@@ -703,13 +664,19 @@ export async function onboardingConversation(
     const existingProject = await dbService.getProjectById(
       existingAdmin.project_id
     );
-
-    if (existingProject) {
+    
+    // If project doesn't exist (was deleted), clean up orphaned admin record and proceed with new registration
+    if (!existingProject) {
+      console.log(`Cleaning up orphaned admin record for user ${user.id}`);
+      await dbService.deleteAdminByTelegramId(user.id);
+      // Continue with normal registration flow below
+    } else {
+      // Project exists, show edit interface
       await sendTyping(ctx);
 
       // Show current token information
       let currentInfo = `<b>Edit Your Token</b>\n\n`;
-      currentInfo += `Token : <b>${escapeHtml(existingProject.name)}</b>\n\n`;
+      currentInfo += `Token: <b>${escapeHtml(existingProject.name)}</b>\n\n`;
       currentInfo += `💖 <b>Contract:</b> <code>${existingProject.contract_address}</code>\n`;
       currentInfo += `💖 <b>Chains:</b> ${existingProject.chains.join(", ")}\n`;
       currentInfo += `💖 <b>Market Cap:</b> ${existingProject.market_cap}\n`;
@@ -801,14 +768,14 @@ export async function onboardingConversation(
 
   // New user or no existing token - proceed with normal onboarding
   await sendTyping(ctx);
-  
+
   // Send step 1 and track the message ID
   try {
     // Send icon image first
     const iconPath = path.join(__dirname, "../../../assets/icon.jpg");
     const iconFile = new InputFile(iconPath);
     await ctx.replyWithPhoto(iconFile);
-    
+
     // Then send message and store its ID
     const step1Message = await ctx.reply(
       ` **Let's register your token!**\n\nI'll guide you through the process step by step. You can type /cancel at any time to stop.\n\n**Step 1/8:** What's your token name?`,
@@ -817,7 +784,7 @@ export async function onboardingConversation(
     previousStepMessageId = step1Message.message_id;
   } catch (error) {
     // If icon fails to send, just send text message and track it
-    console.warn('Failed to send icon, using text only:', error);
+    console.warn("Failed to send icon, using text only:", error);
     const step1Message = await ctx.reply(
       ` **Let's register your token!**\n\nI'll guide you through the process step by step. You can type /cancel at any time to stop.\n\n**Step 1/8:** What's your token name?`,
       { parse_mode: "Markdown" }
@@ -1339,43 +1306,20 @@ export async function onboardingConversation(
 
     const telegramAction = telegramResponse.callbackQuery.data;
 
-    if (telegramAction === "telegram_quick_setup") {
-      const result = await handleQuickTelegramSetup(conversation, ctx);
-      telegramGroup = result.groupUrl;
-      telegramChannel = result.channelUrl;
-      telegramSetupDone = true;
-    } else if (telegramAction === "telegram_add_group") {
+    if (telegramAction === "telegram_add_group") {
       const result = await handleEnhancedGroupSelection(conversation, ctx);
       if (result.success) {
         telegramGroup = result.groupUrl;
-      }
-      // Show updated hub
-      await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
-    } else if (telegramAction === "telegram_add_channel") {
-      const result = await handleEnhancedChannelSelection(conversation, ctx);
-      if (result.success) {
-        telegramChannel = result.channelUrl;
-      }
-      // Show updated hub
-      await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
-    } else if (telegramAction === "telegram_edit_group") {
-      const result = await handleEnhancedGroupSelection(conversation, ctx);
-      if (result.success) {
-        telegramGroup = result.groupUrl;
-      }
-      // Show updated hub
-      await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
-    } else if (telegramAction === "telegram_edit_channel") {
-      const result = await handleEnhancedChannelSelection(conversation, ctx);
-      if (result.success) {
-        telegramChannel = result.channelUrl;
       }
       // Show updated hub
       await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
     } else if (telegramAction === "telegram_reset_setup") {
       telegramGroup = undefined;
       telegramChannel = undefined;
-      await ctx.reply("🔄 **Setup Reset**\n\nStarting fresh with your Telegram connections.", { parse_mode: "Markdown" });
+      await ctx.reply(
+        "🔄 **Setup Reset**\n\nStarting fresh with your Telegram connections.",
+        { parse_mode: "Markdown" }
+      );
       await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
     } else if (telegramAction === "telegram_manual_entry") {
       const result = await handleEnhancedManualEntry(conversation, ctx);
@@ -1384,15 +1328,19 @@ export async function onboardingConversation(
       telegramSetupDone = true;
     } else if (telegramAction === "telegram_setup_complete") {
       if (telegramGroup || telegramChannel) {
-        await ctx.reply("✅ **Telegram setup completed!** Your community connections are ready.", { parse_mode: "Markdown" });
+        await ctx.reply(
+          "✅ **Telegram setup completed!** Your community connections are ready.",
+          { parse_mode: "Markdown" }
+        );
       } else {
-        await ctx.reply("⏭️ **Telegram setup skipped.** You can add connections later from your profile.", { parse_mode: "Markdown" });
+        await ctx.reply(
+          "⏭️ **Telegram setup skipped.** You can add connections later from your profile.",
+          { parse_mode: "Markdown" }
+        );
       }
       telegramSetupDone = true;
     }
   }
-
-  // The rest of the telegram actions are handled by helper functions above
 
   // Set default admin handle from user
   const adminHandles = [user.username || user.first_name || `user_${user.id}`];
@@ -1404,7 +1352,7 @@ export async function onboardingConversation(
 
   // Create project
   await sendTyping(ctx);
-  await ctx.reply(" Creating your project registration...");
+  await ctx.reply("💖 Creating your project registration...");
 
   try {
     const projectData: Omit<Project, "id" | "created_at" | "updated_at"> = {
@@ -1449,71 +1397,137 @@ export async function onboardingConversation(
     });
 
     // Create token card in the same format as browsing
-    let card = ` **Token registered successfully!**\n\n`;
-    card += ` Token Name : **${escapeMarkdown(project.name)}**\n`;
+    let card = `Token Registration Complete!\n\n`;
+    card += `💞 Token: **${project.name.replace(
+      /[*_`[\]()~>#+=|{}.!-]/g,
+      "\\$&"
+    )}**\n\n`;
 
-    card += ` **Contract:** \`${project.contract_address}\`\n`;
-    card += ` **Chains:** ${project.chains.join(", ")}\n`;
-
+    card += `💞 **Project Info:**\n`;
+    card += `• **Chains:** ${project.chains.join(", ")}\n`;
     // Add categories if available
     if (project.categories && project.categories.length > 0) {
-      card += ` **Categories:** ${project.categories.join(", ")}\n`;
+      card += `• **Categories:** ${project.categories.join(", ")}\n`;
     }
-
     // Add description if available
     if (project.description) {
-      card += ` **Description:** ${escapeMarkdown(project.description)}\n`;
+      card += `• **Description:** ${project.description.replace(
+        /[*_`[\]()~>#+=|{}.!-]/g,
+        "\\$&"
+      )}\n`;
     }
 
+    // Add real-time market data if available
     if (
-      project.telegram_group ||
-      project.telegram_channel ||
-      project.x_account
+      project.token_price ||
+      project.token_market_cap_api ||
+      project.token_volume_24h
     ) {
-      card += `\n **Community:**\n`;
-      if (project.telegram_group) {
-        card += `• [Telegram Group](${project.telegram_group})\n`;
+      card += `\n💞 **Live Market Data:**\n`;
+      if (project.token_price) {
+        const priceChange = project.token_price_change_24h;
+        const changeText = priceChange
+          ? ` (${priceChange >= 0 ? "+" : ""}${priceChange.toFixed(2)}%)`
+          : "";
+        card += `• **Price:** $${project.token_price.toFixed(
+          6
+        )}${changeText}\n`;
       }
-      if (project.telegram_channel) {
-        card += `• [Announcement Channel](${project.telegram_channel})\n`;
+      if (project.token_market_cap_api) {
+        const marketCap = project.token_market_cap_api;
+        let formattedMarketCap = "";
+        if (marketCap >= 1e12) {
+          formattedMarketCap = `$${(marketCap / 1e12).toFixed(2)}T`;
+        } else if (marketCap >= 1e9) {
+          formattedMarketCap = `$${(marketCap / 1e9).toFixed(2)}B`;
+        } else if (marketCap >= 1e6) {
+          formattedMarketCap = `$${(marketCap / 1e6).toFixed(2)}M`;
+        } else if (marketCap >= 1e3) {
+          formattedMarketCap = `$${(marketCap / 1e3).toFixed(2)}K`;
+        } else {
+          formattedMarketCap = `$${marketCap.toFixed(2)}`;
+        }
+        card += `• **Market Cap:** ${formattedMarketCap}\n`;
       }
-      if (project.x_account) {
-        card += `• [X (Twitter)](https://x.com/${escapeMarkdown(
-          project.x_account.replace("@", "")
-        )})\n`;
+      if (project.token_volume_24h) {
+        const volume = project.token_volume_24h;
+        let formattedVolume = "";
+        if (volume >= 1e12) {
+          formattedVolume = `$${(volume / 1e12).toFixed(2)}T`;
+        } else if (volume >= 1e9) {
+          formattedVolume = `$${(volume / 1e9).toFixed(2)}B`;
+        } else if (volume >= 1e6) {
+          formattedVolume = `$${(volume / 1e6).toFixed(2)}M`;
+        } else if (volume >= 1e3) {
+          formattedVolume = `$${(volume / 1e3).toFixed(2)}K`;
+        } else {
+          formattedVolume = `$${volume.toFixed(2)}`;
+        }
+        card += `• **24h Volume:** ${formattedVolume}\n`;
       }
     }
 
-    card += ` **Registered:** ${
-      project.created_at?.toLocaleDateString() || "Today"
+    // Add social links if available
+    const socialLinks = [];
+    if (project.telegram_group) {
+      socialLinks.push(`[Telegram Group](${project.telegram_group})`);
+    }
+    if (project.telegram_channel) {
+      socialLinks.push(`[Announcement Channel](${project.telegram_channel})`);
+    }
+    if (project.x_account) {
+      socialLinks.push(
+        `[X (Twitter)](https://x.com/${project.x_account.replace("@", "")})`
+      );
+    }
+    if (project.token_telegram_group_api) {
+      socialLinks.push(
+        `[Official Telegram](${project.token_telegram_group_api})`
+      );
+    }
+    if (project.token_twitter_handle) {
+      socialLinks.push(`[Twitter](${project.token_twitter_handle})`);
+    }
+    if (project.token_website) {
+      socialLinks.push(`[Website](${project.token_website})`);
+    }
+
+    if (socialLinks.length > 0) {
+      card += `\n💞 **Community:**\n`;
+      card += socialLinks.map((link) => `• ${link}`).join("\n") + "\n";
+    }
+
+    card += `\n**Registered:** ${
+      project.created_at?.toLocaleDateString() || "Unknown"
     }\n`;
-    card += `\n**Admins:** ${project.admin_handles
-      .map((handle) => `@${escapeMarkdown(handle)}`)
-      .join(", ")}\n`;
+    card += `\n**Contract:** \`${project.contract_address}\`\n`;
     card += `\nYou can now start browsing and matching with other tokens!`;
 
-    // Create menu button
-    const menuButton = new InlineKeyboard().text(" Menu", "return_to_menu");
+    // Create buttons with Start Matching on top
+    const completionButtons = new InlineKeyboard()
+      .text("💕 Start Matching 💞", "start_browsing")
+      .row()
+      .text("Main Menu", "return_to_menu");
 
-    // Send with logo if available
+    // Send the registration completion card
     if (project.logo_file_id) {
       try {
         await ctx.replyWithPhoto(project.logo_file_id, {
           caption: card,
           parse_mode: "Markdown",
-          reply_markup: menuButton,
+          reply_markup: completionButtons,
         });
       } catch (error) {
         // Fallback to text if logo fails
         await ctx.reply(card, {
           parse_mode: "Markdown",
-          reply_markup: menuButton,
+          reply_markup: completionButtons,
         });
       }
     } else {
       await ctx.reply(card, {
         parse_mode: "Markdown",
-        reply_markup: menuButton,
+        reply_markup: completionButtons,
       });
     }
   } catch (error) {
@@ -2232,14 +2246,17 @@ async function editExistingToken(
       telegramGroup = result.groupUrl;
       telegramChannel = result.channelUrl;
       telegramEditSetupDone = true;
-    } else if (telegramAction === "telegram_add_group" || telegramAction === "telegram_edit_group") {
+    } else if (telegramAction === "telegram_add_group") {
       const result = await handleEnhancedGroupSelection(conversation, ctx);
       if (result.success) {
         telegramGroup = result.groupUrl;
       }
       // Show updated hub
       await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
-    } else if (telegramAction === "telegram_add_channel" || telegramAction === "telegram_edit_channel") {
+    } else if (
+      telegramAction === "telegram_add_channel" ||
+      telegramAction === "telegram_edit_channel"
+    ) {
       const result = await handleEnhancedChannelSelection(conversation, ctx);
       if (result.success) {
         telegramChannel = result.channelUrl;
@@ -2249,7 +2266,10 @@ async function editExistingToken(
     } else if (telegramAction === "telegram_reset_setup") {
       telegramGroup = undefined;
       telegramChannel = undefined;
-      await ctx.reply("🔄 **Setup Reset**\n\nStarting fresh with your Telegram connections.", { parse_mode: "Markdown" });
+      await ctx.reply(
+        "🔄 **Setup Reset**\n\nStarting fresh with your Telegram connections.",
+        { parse_mode: "Markdown" }
+      );
       await showTelegramSetupHub(ctx, telegramGroup, telegramChannel);
     } else if (telegramAction === "telegram_manual_entry") {
       const result = await handleEnhancedManualEntry(conversation, ctx);
@@ -2258,9 +2278,15 @@ async function editExistingToken(
       telegramEditSetupDone = true;
     } else if (telegramAction === "telegram_setup_complete") {
       if (telegramGroup || telegramChannel) {
-        await ctx.reply("✅ **Telegram connections updated!** Your community setup is ready.", { parse_mode: "Markdown" });
+        await ctx.reply(
+          "✅ **Telegram connections updated!** Your community setup is ready.",
+          { parse_mode: "Markdown" }
+        );
       } else {
-        await ctx.reply("✅ **Telegram connections cleared.** You can add them back anytime.", { parse_mode: "Markdown" });
+        await ctx.reply(
+          "✅ **Telegram connections cleared.** You can add them back anytime.",
+          { parse_mode: "Markdown" }
+        );
       }
       telegramEditSetupDone = true;
     }

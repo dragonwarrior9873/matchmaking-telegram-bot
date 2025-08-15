@@ -15,15 +15,23 @@ if (!user) return;
 
 // Check if user has registered tokens
 const existingAdmins = await dbService.getAdminsByTelegramId(user.id);
+const isRegistered = existingAdmins.length > 0;
 
 // Send the logo/header first
 let logoMessage = ` **MATCHMAKER** \n\n`;
 logoMessage += `**Swipe. Match. Moon Together.** \n\n`;
 
-let welcomeMessage = `💖 Congratulations — you've made it to Matchmaker!\n\n`;
-welcomeMessage += `Struggling to make connections out there? Don't worry — Matchmaker has got you covered.\n\n`;
-welcomeMessage += `Before we can pair you with your perfect block-mates, we need to get to know your project. You're just a few clicks away from meeting your perfect soul-projects.\n\n`;
-welcomeMessage += `Tap "Set Me Up" below to mint your profile. 💖`;
+let welcomeMessage = '';
+if (isRegistered) {
+  // Message for registered users - simple and direct
+  welcomeMessage = `Welcome back! Choose an option below:`;
+} else {
+  // Message for unregistered users - encouraging them to register
+  welcomeMessage = `💖 Congratulations — you've made it to Matchmaker!\n\n`;
+  welcomeMessage += `Struggling to make connections out there? Don't worry — Matchmaker has got you covered.\n\n`;
+  welcomeMessage += `Before we can pair you with your perfect block-mates, we need to get to know your project. You're just a few clicks away from meeting your perfect soul-projects.\n\n`;
+  welcomeMessage += `Tap "Set me up" below to mint your profile. 💖`;
+}
 
 // Send icon with the dynamic keyboard
 const iconPath = path.join(__dirname, '../../assets/icon.jpg');
@@ -43,11 +51,22 @@ await ctx.conversation.exit();
 const user = ctx.from;
 if (!user) return;
 
+// Check if user is registered to show appropriate message
+const existingAdmins = await dbService.getAdminsByTelegramId(user.id);
+const isRegistered = existingAdmins.length > 0;
+
 const iconPath = path.join(__dirname, '../../assets/icon.jpg');
 const keyboard = await createMenuKeyboard(user.id);
 
+let cancelMessage = '';
+if (isRegistered) {
+  cancelMessage = '❌ Operation cancelled. Welcome back! Choose an option below:';
+} else {
+  cancelMessage = '❌ Operation cancelled. Choose an option:';
+}
+
 await ctx.replyWithPhoto(new InputFile(iconPath), {
-caption: '❌ Operation cancelled. Choose an option:',
+caption: cancelMessage,
 reply_markup: keyboard
 });
 });
@@ -82,11 +101,22 @@ bot.command('menu', async (ctx: MyContext) => {
 const user = ctx.from;
 if (!user) return;
 
+// Check if user is registered to show appropriate message
+const existingAdmins = await dbService.getAdminsByTelegramId(user.id);
+const isRegistered = existingAdmins.length > 0;
+
 const iconPath = path.join(__dirname, '../../assets/icon.jpg');
 const keyboard = await createMenuKeyboard(user.id);
 
+let menuMessage = '';
+if (isRegistered) {
+  menuMessage = 'Welcome back! Choose an option below:';
+} else {
+  menuMessage = 'Choose an option:';
+}
+
 await ctx.replyWithPhoto(new InputFile(iconPath), {
-caption: 'Choose an option:',
+caption: menuMessage,
 reply_markup: keyboard
 });
 });
