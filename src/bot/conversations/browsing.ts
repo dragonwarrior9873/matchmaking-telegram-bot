@@ -168,7 +168,7 @@ export async function browsingConversation(
 
     if (action.startsWith("like_")) {
       try {
-        await response.answerCallbackQuery("PUMP �d!");
+        await response.answerCallbackQuery("PUMP");
       } catch (error) {
         // Ignore callback query timeout errors
         console.log("Callback query timeout - continuing...");
@@ -254,7 +254,7 @@ export async function browsingConversation(
       }
     } else if (action.startsWith("pass_")) {
       try {
-        await response.answerCallbackQuery("DUMP �ed");
+        await response.answerCallbackQuery("DUMP");
       } catch (error) {
         // Ignore callback query timeout errors
         console.log("Callback query timeout - continuing...");
@@ -316,7 +316,7 @@ async function createProjectCard(
   totalProjects: number
 ): Promise<string> {
   let card = ``;
-  card += `💞 Token : **${project.name.replace(
+  card += `💞 Token: **${project.name.replace(
     /[*_`[\]()~>#+=|{}.!-]/g,
     "\\$&"
   )}**\n\n`;
