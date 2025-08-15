@@ -115,4 +115,5 @@ export interface ConversationData {
   projectData?: Partial<Project>;
   currentProjectIndex?: number;
   viewingProjects?: Project[];
+  editField?: string;
 }

@@ -475,6 +475,103 @@ export class DatabaseService {
     }
   }
 
+  // Delete project and all related data
+  async deleteProject(projectId: string): Promise<boolean> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return false;
+      }
+
+      console.log(`Starting deletion for project: ${projectId}`);
+      
+      // Delete all related data sequentially (no transactions needed)
+      
+      // 1. Delete all likes for this project (both given and received)
+      const likesDeleted = await ProjectLikeModel.deleteMany({
+        $or: [
+          { project_id: projectId },
+          { liked_project_id: projectId }
+        ]
+      });
+      console.log(`Deleted ${likesDeleted.deletedCount} project likes`);
+      
+      // 2. Delete all matches involving this project
+      const matchesDeleted = await MatchModel.deleteMany({
+        $or: [
+          { project_a_id: projectId },
+          { project_b_id: projectId }
+        ]
+      });
+      console.log(`Deleted ${matchesDeleted.deletedCount} matches`);
+
+      // 3. Delete all match groups involving this project
+      const matchGroupsDeleted = await MatchGroupModel.deleteMany({
+        $or: [
+          { project_a_id: projectId },
+          { project_b_id: projectId }
+        ]
+      });
+      console.log(`Deleted ${matchGroupsDeleted.deletedCount} match groups`);
+      
+      // 4. Delete all admins associated with this project
+      const adminsDeleted = await AdminModel.deleteMany({ project_id: projectId });
+      console.log(`Deleted ${adminsDeleted.deletedCount} admins`);
+        
+      // 5. Finally, delete the project itself
+      const projectDeleted = await ProjectModel.findByIdAndDelete(projectId);
+      console.log(`Project deleted: ${projectDeleted ? 'Yes' : 'No'}`);
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      return false;
+    }
+  }
+
+  // Delete all projects for a user by telegram ID
+  async deleteAllUserProjects(telegramId: number): Promise<boolean> {
+    try {
+      console.log(`Starting deletion of all projects for user: ${telegramId}`);
+      
+      // Get all admins (projects) for this user
+      const admins = await AdminModel.find({ telegram_id: telegramId });
+      
+      if (admins.length === 0) {
+        console.log('No projects found for this user');
+        return true;
+      }
+      
+      console.log(`Found ${admins.length} projects to delete`);
+      
+      let allSuccessful = true;
+      
+      // Delete each project and its related data
+      for (const admin of admins) {
+        const success = await this.deleteProject(admin.project_id);
+        if (!success) {
+          allSuccessful = false;
+          console.error(`Failed to delete project: ${admin.project_id}`);
+        }
+      }
+      
+      return allSuccessful;
+    } catch (error) {
+      console.error('Error deleting all user projects:', error);
+      return false;
+    }
+  }
+
+  // Delete admin by telegram ID
+  async deleteAdminByTelegramId(telegramId: number): Promise<boolean> {
+    try {
+      const result = await AdminModel.deleteMany({ telegram_id: telegramId });
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting admin by telegram ID:', error);
+      return false;
+    }
+  }
+
   // Health check method
   async healthCheck(): Promise<boolean> {
     try {

@@ -382,8 +382,8 @@ return card;
 
 function createBrowsingKeyboard(projectId: string): InlineKeyboard {
 return new InlineKeyboard()
-.text("PUMP 💖", `like_${projectId}`)
 .text("DUMP 💔", `pass_${projectId}`)
+.text("PUMP 💖", `like_${projectId}`)
 .row()
 .text("🛑 Stop Browsing", "stop_browsing");
 }

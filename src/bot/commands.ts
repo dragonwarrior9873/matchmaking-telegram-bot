@@ -23,7 +23,7 @@ logoMessage += `**Swipe. Match. Moon Together.** \n\n`;
 let welcomeMessage = `💖 Congratulations — you've made it to Matchmaker!\n\n`;
 welcomeMessage += `Struggling to make connections out there? Don't worry — Matchmaker has got you covered.\n\n`;
 welcomeMessage += `Before we can pair you with your perfect block-mates, we need to get to know your project. You're just a few clicks away from meeting your perfect soul-projects.\n\n`;
-welcomeMessage += `Tap "Set Me Up" below to mint your profile. `;
+welcomeMessage += `Tap "Set Me Up" below to mint your profile. 💖`;
 
 // Send icon with the dynamic keyboard
 const iconPath = path.join(__dirname, '../../assets/icon.jpg');
